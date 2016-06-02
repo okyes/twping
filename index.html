@@ -37,22 +37,26 @@
 		<tr><td>live.twitch.tv</td><td>US West: San Francisco, CA</td><td></td></tr>
 		<tr><td>live-sjc.twitch.tv</td><td>US West: San Jose,CA</td><td></td></tr>
 		<tr><td>live-sea.twitch.tv</td><td>US West: Seattle,WA</td><td></td></tr>
-	    <tbody>
+	    </tbody>
 	</table>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.rawgit.com/jdfreder/pingjs/c2190a3649759f2bd8569a72ae2b597b2546c871/ping.js"></script>
 	<script src="https://cdn.jsdelivr.net/tablesorter/2.17.4/js/jquery.tablesorter.min.js"></script>
 	<script>
-			$('#ping').click(function () {
-				var counter = 1;
-				$('tbody tr').each(function () {
-					var self = this;
-					ping('http://' + $(this).find(':first-child').text() + ':1935').then(function (delta) {
-						$(self).find(':last-child').text(delta + ' ms');
-						counter++;
-						if (counter === $('tr').length)
-							$('table').tablesorter();
+			function cb(self, delta) {
+				$(self).find('td:last-child').text(delta + ' ms');
+				if ($(self).find('td:first-child').text() === $('tbody tr:last-child td:first-child').text()) {
+					$('table').tablesorter();
+				} else {
+					ping('http://' + $(self).next().find('td:first-child').text() + ':1935').then(function (delta) {
+						cb($(self).next(), delta);
 					});
+				}
+			}
+			$('#ping').click(function () {
+				var self = $('tbody tr:first-child');
+				ping('http://' + $(self).find('td:first-child').text() + ':1935').then(function (delta) {
+					cb(self, delta);
 				});
 			});
 	</script>
